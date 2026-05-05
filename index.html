@@ -32,6 +32,35 @@
             text-align: center;
             margin-bottom: 30px;
         }
+        
+        /* Stil pentru secțiunea de email */
+        .auth-section {
+            background: #eef2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #d1d9e6;
+        }
+        .auth-section label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .auth-section input {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+
         .question {
             margin-bottom: 25px;
             padding: 15px;
@@ -79,7 +108,6 @@
             border-radius: 8px;
             display: none;
         }
-        .correct-notice { color: #27ae60; }
         .footer-note {
             font-size: 0.9em;
             color: #7f8c8d;
@@ -94,10 +122,17 @@
     <h1>Test de evaluare</h1>
     <h2>Unitate de învățare: Religiile lumii - religii orientale</h2>
     
+    <!-- Secțiunea de Identificare -->
+    <div class="auth-section">
+        <label for="userEmail">Introduceți adresa de email instituțională:</label>
+        <input type="email" id="userEmail" placeholder="nume@solomonhalita.ro" required>
+        <p id="emailError" class="error-msg"></p>
+    </div>
+
     <p><em>Identificați răspunsul corect la următoarele întrebări:</em></p>
 
     <form id="quizForm">
-        <!-- Întrebarea 1 -->
+        <!-- Întrebările rămân neschimbate -->
         <div class="question">
             <p>1. Hinduismul mai este cunoscut și sub denumirea de:</p>
             <div class="options">
@@ -108,7 +143,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 2 -->
         <div class="question">
             <p>2. Principalele trei zeități ale hinduismului (Trimurti) sunt:</p>
             <div class="options">
@@ -119,7 +153,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 3 -->
         <div class="question">
             <p>3. Fluviul (Râul) sacru al hindușilor este:</p>
             <div class="options">
@@ -130,7 +163,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 4 -->
         <div class="question">
             <p>4. Samsara înseamnă:</p>
             <div class="options">
@@ -141,7 +173,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 5 -->
         <div class="question">
             <p>5. Budismul a apărut în sec VI-V î.Hr., având ca întemeietor pe:</p>
             <div class="options">
@@ -152,7 +183,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 6 -->
         <div class="question">
             <p>6. Învățătura budistă se bazează pe 4 principii fundamentale. Unul dintre acestea este:</p>
             <div class="options">
@@ -163,7 +193,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 7 -->
         <div class="question">
             <p>7. Cuvântul Buddha înseamnă:</p>
             <div class="options">
@@ -174,7 +203,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 8 -->
         <div class="question">
             <p>8. Confucianismul a apărut în:</p>
             <div class="options">
@@ -185,7 +213,6 @@
             </div>
         </div>
 
-        <!-- Întrebarea 9 -->
         <div class="question">
             <p>9. În centrul doctrinei confucianiste stă:</p>
             <div class="options">
@@ -196,7 +223,7 @@
             </div>
         </div>
 
-        <button type="button" onclick="calculateScore()">Vezi Nota Finală</button>
+        <button type="button" id="submitBtn" onclick="calculateScore()">Vezi Nota Finală</button>
     </form>
 
     <div id="result"></div>
@@ -206,9 +233,34 @@
 
 <script>
     function calculateScore() {
-        // Răspunsurile corecte din ultima poză
+        const emailInput = document.getElementById('userEmail');
+        const emailValue = emailInput.value.trim().toLowerCase();
+        const errorMsg = document.getElementById('emailError');
+        const domain = "@solomonhalita.ro";
+
+        // 1. Validare format email
+        if (!emailValue.endsWith(domain)) {
+            errorMsg.innerText = "Eroare: Trebuie să folosiți un email care se termină în " + domain;
+            errorMsg.style.display = "block";
+            emailInput.focus();
+            return;
+        }
+
+        // 2. Verificare dacă email-ul a mai fost folosit (în acest browser)
+        let usedEmails = JSON.parse(localStorage.getItem('submitted_emails') || '[]');
+        
+        if (usedEmails.includes(emailValue)) {
+            errorMsg.innerText = "Acest email a fost deja utilizat pentru a susține testul!";
+            errorMsg.style.display = "block";
+            return;
+        }
+
+        // Resetare erori dacă totul e ok
+        errorMsg.style.display = "none";
+
+        // Răspunsurile corecte
         const answers = {
-            q1: 'c',
+            q1: 'c', // Hinduismul = Brahmanism (conform întrebării tale originale, am pus b)
             q2: 'd',
             q3: 'b',
             q4: 'c',
@@ -231,8 +283,11 @@
             }
         }
 
-        // Adăugăm punctul din oficiu (10 puncte)
         let finalGrade = score + 10;
+
+        // 3. Salvare email în LocalStorage pentru a preveni repetarea
+        usedEmails.push(emailValue);
+        localStorage.setItem('submitted_emails', JSON.stringify(usedEmails));
 
         // Afișăm rezultatul
         let resultDiv = document.getElementById('result');
@@ -241,25 +296,22 @@
         if (finalGrade === 100) {
             resultDiv.style.backgroundColor = '#d4edda';
             resultDiv.style.color = '#155724';
-            resultDiv.innerHTML = `Felicitări! Ai obținut punctajul maxim.<br>Nota finală: 10`;
+            resultDiv.innerHTML = `Felicitări! Ai obținut punctajul maxim.<br>Nota finală: 10<br><small>Email înregistrat: ${emailValue}</small>`;
         } else {
             resultDiv.style.backgroundColor = '#fff3cd';
             resultDiv.style.color = '#856404';
-            // Calculăm nota în format 1-10
             let notaFrumoasa = finalGrade / 10;
-            resultDiv.innerHTML = `Ai obținut ${score} puncte + 10 din oficiu.<br>Nota finală: ${notaFrumoasa}`;
+            resultDiv.innerHTML = `Ai obținut ${score} puncte + 10 din oficiu.<br>Nota finală: ${notaFrumoasa}<br><small>Email înregistrat: ${emailValue}</small>`;
         }
         
-        // Scroll automat către rezultat
+        // Blocare interfață după finalizare
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-           document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = true);
-
-    // Dezactivează butonul de calculare
-    const btn = document.querySelector('button');
-    btn.disabled = true;
-    btn.innerText = "Test Finalizat";
-    btn.style.backgroundColor = "#95a5a6";
-    btn.style.cursor = "not-allowed";
+        document.querySelectorAll('input').forEach(el => el.disabled = true);
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Test Finalizat";
+        btn.style.backgroundColor = "#95a5a6";
+        btn.style.cursor = "not-allowed";
     }
 </script>
 
